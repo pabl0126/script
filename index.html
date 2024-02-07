@@ -1,0 +1,84 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimised YouTube Script Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.3/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        .retro-style {
+            background-color: #f4f1de;
+            color: #3d405b;
+        }
+
+        button, input {
+            transition: transform 0.2s ease-in-out;
+        }
+
+        button:hover, input:focus {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="retro-style">
+    <div class="container mx-auto px-4">
+        <h1 class="text-2xl text-center my-5">YouTube Script Generator</h1>
+        <div class="w-full max-w-xs mx-auto">
+            <form id="scriptForm">
+                <div class="mb-4">
+                    <label for="topic" class="block text-sm font-bold mb-2">Topic / Subject of the Youtube Script</label>
+                    <input type="text" id="topic" name="topic" class="shadow appearance-none border rounded w-full py-2 px-3 text-grey-darker" required>
+                </div>
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" id="generateScript">Generate Script 🎥</button>
+            </form>
+        </div>
+        <div id="output" class="my-5 p-5 bg-white rounded shadow"></div>
+    </div>
+    <footer class="text-center py-5">
+        <p>Made with ❤️</p>
+    </footer>
+    <script>
+        const form = document.getElementById('scriptForm');
+        const output = document.getElementById('output');
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const topicInput = document.getElementById('topic').value;
+            const substitutedPrompt = `Create a script for a YouTube video that explores the topic of ${topicInput} and offers valuable insights to the viewers.`;
+            output.innerText = ''; // Clear the output section first
+
+            const websocket = new WebSocket('wss://backend.buildpicoapps.com/ask_ai_streaming_v2');
+
+            websocket.addEventListener("open", () => {
+                websocket.send(JSON.stringify({
+                    appId: "system-before",
+                    prompt: substitutedPrompt,
+                }));
+            });
+
+            websocket.addEventListener("message", (event) => {
+                console.log(event.data);
+                output.innerText = `${output.innerText}${event.data}`;
+            });
+
+            websocket.addEventListener("error", (error) => {
+                console.log('WebSocket error', error);
+                alert("Oops, we ran into an error. Refresh the page and try again.");
+            });
+
+            websocket.addEventListener("close", (event) => {
+                console.log("Connection closed", event.code, event.reason);
+                if (event.code != 1000) {
+                    alert("Oops, we ran into an error. Refresh the page and try again.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+```
